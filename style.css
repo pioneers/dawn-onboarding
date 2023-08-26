@@ -41,15 +41,15 @@ body {
   visibility: hidden;
 }
 
-.key.w {
+#w {
   background-color: #e74c3c;
 }
-.key.a {
+#a {
   background-color: #2ecc71;
 }
-.key.s {
+#s {
   background-color: #e67e22;
 }
-.key.d {
+#d {
   background-color: #9b59b6;
 }
