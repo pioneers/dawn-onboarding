@@ -12,10 +12,20 @@
       content="default-src 'self'; script-src 'self'"
     />
     <title>Tiny Dawn</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div id="listener">
-        <button>Start listener</button>
+      <button>Start listener</button>
+      <div class="keypad">
+        <div class="key empty"></div>
+        <div class="key" id="w">W</div>
+        <div class="key empty"></div>
+        <div class="key" id="a">A</div>
+        <div class="key" id="s">S</div>
+        <div class="key" id="d">D</div>
+        <div class="key empty"></div>
+      </div>
     </div>
   </body>
   <script src="listening.js"></script>
