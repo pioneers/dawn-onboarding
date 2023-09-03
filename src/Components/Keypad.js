@@ -22,7 +22,7 @@ function State({msg}) {
 
 function Keys(props) {
   const key = createElement(
-    'button',
+    'div',
     {
       className: "key",
       id: props.name,
