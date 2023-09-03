@@ -3,7 +3,7 @@ import "./App.css";
 import Keypad from "./Components/Keypad.js";
 
 function App() {
-  return <div className="App">Hello World!
+  return <div className="App">
     <Keypad />
   </div>;
 }
