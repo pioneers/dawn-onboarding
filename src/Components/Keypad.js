@@ -63,14 +63,6 @@ export default function Keypad() {
     }
   }
 
-  // useEffect occurs after the return(rendering). This part tracks whether keys on the keyboard are pressed and triggers the 
-  // press and unpress function.
-  useEffect(() => {
-    const listener = document.getElementById("listener");
-    listener.addEventListener("keydown", (event) => press(event.key));
-    listener.addEventListener("keyup", (event) => unpress(event.key));
-  });
-
   // useEffect occurs after the return. This useEffect tracks change in any of the useStates and calls the state() function
   // to create and send the state to console(later change to send it where we need).
   useEffect(() => {
@@ -102,6 +94,32 @@ export default function Keypad() {
     }
   }, [isWPressed, isAPressed, isSPressed, isDPressed]);
 
+  // Send data
+  const sendData = (curr_state) => {
+    fetch('http://localhost:5000/', {
+      'method' : 'POST',
+      headers: { "Content-Type" : "application/json" },
+      body: JSON.stringify({"curr_state" : curr_state})
+    }).then(resp => resp.json())
+    .catch(error => console.log(error));
+  }
+
+  // useEffect occurs after the return(rendering). This part tracks whether keys on the keyboard are pressed and triggers the 
+  // press and unpress function.
+  useEffect(() => {
+    const listener = document.getElementById("listener");
+    listener.addEventListener("keydown", (event) => {
+      press(event.key)
+      const curr_state = JSON.stringify(state())
+      sendData(curr_state)
+    });
+    listener.addEventListener("keyup", (event) => {
+      unpress(event.key)
+      const curr_state = JSON.stringify(state())
+      sendData(curr_state)
+    });
+  });
+
   // Simple dictionary
   function state() {
     const dict = {
@@ -123,6 +141,7 @@ export default function Keypad() {
       dict["D"] = "1";
     }
     console.log(dict);
+    return dict;
   }
 
   return <div id="listener">
