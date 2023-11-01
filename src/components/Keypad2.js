@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { dataLayer } from "../actions/index.js";
 
 const UP = "UP",
   DOWN = "DOWN",
   LEFT = "LEFT",
   RIGHT = "RIGHT";
+
+const ROBOT_IP = "http://localhost:5000/"; // (fake robot)
 
 const KeyHandler = () => {
   const [keyCount, setKeyCount] = useState({
@@ -12,6 +15,10 @@ const KeyHandler = () => {
     DOWN: 0,
     RIGHT: 0,
   });
+
+  useEffect(() => {
+    dataLayer.sendData(keyCount, ROBOT_IP);
+  }, [keyCount]);
 
   /* For key presses */
   const keyMap = {
@@ -55,7 +62,8 @@ const KeyHandler = () => {
     };
   }, []);
 
-  /* For UI button presses */
+  /* For UI button presses. NOTE, TODO: bug when pressing down, and dragging
+   cursor off the button, state still thinks that button is still pressed down */
   const handleButtonClick = (direction, increment) => {
     setKeyCount((prevCount) => ({
       ...prevCount,
@@ -67,14 +75,14 @@ const KeyHandler = () => {
 
   return (
     <div>
-      <div>Press WASD or Arrow keys</div>
+      <div>Press WASD or Arrow keys (try not to use the UI buttons)</div>
       {directions.map((dir) => (
-          <button
-            onMouseDown={() => handleButtonClick(dir, true)}
-            onMouseUp={() => handleButtonClick(dir, false)}
-          >
-            {dir.charAt(0).toUpperCase() + dir.slice(1)}
-          </button>
+        <button
+          onMouseDown={() => handleButtonClick(dir, true)}
+          onMouseUp={() => handleButtonClick(dir, false)}
+        >
+          {dir.charAt(0).toUpperCase() + dir.slice(1)}
+        </button>
       ))}
 
       <pre>{JSON.stringify(keyCount, null, 2)}</pre>

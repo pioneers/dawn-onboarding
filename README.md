@@ -1,4 +1,11 @@
-# Getting Started with Create React App
+# Development
+
+Make sure npm is installed, then run `npm i` to install all dependencies.
+For development, run `npm run dev`.
+
+To run the test server, run `python backend/app.py`.
+
+# _(ignore, default react message below)_ Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
