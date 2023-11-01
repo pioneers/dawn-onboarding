@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import './style.css';
 import { createElement } from 'react';
 
+var CONNECTED_IP = 'http://localhost:5000/'
 // Component for key(WASD). Takes in props of name, onMouseDown, onMouseup. name to give an 
 // id and label and onMousDown/Up to call function to change state. 
 function Keys(props) {
@@ -155,9 +156,9 @@ export default function Keypad() {
   }
 
   // Send data
-  const sendData = (curr_state) => {
+  const sendData = (curr_state, ip) => {
     console.log('sending', curr_state)
-    fetch('http://localhost:5000/', {
+    fetch(ip, {
       'method' : 'POST',
       headers: { "Content-Type" : "application/json" },
       body: JSON.stringify({"curr_state" : curr_state})
@@ -165,9 +166,10 @@ export default function Keypad() {
     .catch(error => console.log(error));
   }
   
-  // Creates sending loop
+  // Creates sending loop. Delay is null, so does not loop when isConnected is false. Delay is 3s when isConnected is true.
   useInterval((put = state())  => {
-    sendData(put)}, isConnected? 3000 : null);
+    const ip = CONNECTED_IP
+    sendData(put, ip)}, isConnected? 500 : null);
   
   const reconnect = () => {
     setIsConnected(true);
