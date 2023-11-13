@@ -1,10 +1,12 @@
 import logo from "./logo.svg";
 import "./App.css";
-import Keypad from "./components/Keypad2.js";
+import Keypad from "./components/Keypad.js";
+import Editor from "./components/Editor";
 
 function App() {
   return <div className="App">
-    <Keypad />
+    <Editor/>
+    {/* <Keypad /> */}
   </div>;
 }
 

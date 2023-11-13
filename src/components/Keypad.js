@@ -1,32 +1,93 @@
 import React, { useEffect, useState, useRef } from "react";
-import './style.css';
-import { createElement } from 'react';
+import { dataLayer } from "../actions/index.js";
+import "./style.css";
 
-var CONNECTED_IP = 'http://localhost:5000/'
-// Component for key(WASD). Takes in props of name, onMouseDown, onMouseup. name to give an 
-// id and label and onMousDown/Up to call function to change state. 
-function Keys(props) {
-  const key = createElement(
-    'div',
-    {
-      className: "key",
-      id: props.name,
-      onMouseDown: props.onMouseDown,
-      onMouseUp: props.onMouseUp
-    },
-    props.name
-  )
-  return key
-}
+const UP = "UP",
+  DOWN = "DOWN",
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
+  EMPTY = "EMPTY";
 
-// Component for an empty key.
-function Empty() {
-  return <div className="key empty"></div>
-}
+const ROBOT_IP = "http://localhost:5000/"; // (fake robot)
 
-// The whole keypad which renders in App.js
-export default function Keypad() {
-  //foreign code:
+function KeyHandler() {
+  const [connected, setConnected] = useState(false);
+  const [keyCount, setKeyCount] = useState({
+    UP: 0,
+    LEFT: 0,
+    DOWN: 0,
+    RIGHT: 0,
+  });
+
+  useEffect(() => {
+    dataLayer.sendData(keyCount, ROBOT_IP);
+  }, [keyCount]);
+
+  /* For key presses */
+  const keyMap = {
+    w: UP,
+    a: LEFT,
+    s: DOWN,
+    d: RIGHT,
+    ArrowUp: UP,
+    ArrowLeft: LEFT,
+    ArrowDown: DOWN,
+    ArrowRight: RIGHT,
+  };
+
+  const handleKeyEvent = (event, increment) => {
+    const key = event.key;
+    const direction = keyMap[key];
+    if (direction && !event.repeat) {
+      setKeyCount((prevCount) => ({
+        ...prevCount,
+        [direction]: prevCount[direction] + (increment ? 1 : -1),
+      }));
+    }
+  };
+
+  /* For key presses */
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      handleKeyEvent(event, true);
+    };
+
+    const handleKeyUp = (event) => {
+      handleKeyEvent(event, false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  /* For UI button presses. NOTE, TODO: bug when pressing down, and dragging
+   cursor off the button, state still thinks that button is still pressed down */
+  const handleButtonClick = (direction, increment) => {
+    setKeyCount((prevCount) => ({
+      ...prevCount,
+      [direction]: prevCount[direction] + (increment ? 1 : -1),
+    }));
+  };
+
+  function Key(props) {
+    const dir = props.dir;
+    return (
+      <div
+        className="key"
+        onMouseDown={() => handleButtonClick(dir, true)}
+        onMouseUp={() => handleButtonClick(dir, false)}
+      >
+        {dir.charAt(0).toUpperCase() + dir.slice(1)}
+      </div>
+    );
+  }
+
+  /* Ping interval */
   function useInterval(callback, delay) {
     const savedCallback = useRef();
 
@@ -47,151 +108,38 @@ export default function Keypad() {
     }, [delay]);
   }
 
-  // These const useStates are used to keep track of what key is being pressed. Default is false = not pressed.
-  const [isWPressed, setIsWPressed] = useState(false);
-  const [isAPressed, setIsAPressed] = useState(false);
-  const [isSPressed, setIsSPressed] = useState(false);
-  const [isDPressed, setIsDPressed] = useState(false);
-  // State for connection
-  const [isConnected, setIsConnected] = useState(false);
+  // Creates sending loop. Delay is null, so does not loop when connected is false. Delay is 3s when connected is true.
+  useInterval(
+    () => {
+      dataLayer.sendData(keyCount, ROBOT_IP);
+    },
+    connected ? 500 : null
+  );
 
-  // Change the specific state based on specific id of key pressed.
-  function press(id) {
-    if (id === "w") {
-      setIsWPressed(true)
-    }
-    if (id === "a") {
-      setIsAPressed(true)
-    }
-    if (id === "s") {
-      setIsSPressed(true)
-    }
-    if (id === "d") {
-      setIsDPressed(true)
-    }
-  }
-
-  // We need to track both presses and unpresses. 
-  function unpress(id) {
-    if (id === "w") {
-      setIsWPressed(false)
-    }
-    if (id === "a") {
-      setIsAPressed(false)
-    }
-    if (id === "s") {
-      setIsSPressed(false)
-    }
-    if (id === "d") {
-      setIsDPressed(false)
-    }
-  }
-
-  // useEffect occurs after the return(rendering). This part tracks whether keys on the keyboard are pressed and triggers the 
-  // press and unpress function.
-  useEffect(() => {
-    const listener = document.getElementById("listener");
-    listener.addEventListener("keydown", (event) => {
-      press(event.key)
-    });
-    listener.addEventListener("keyup", (event) => {
-      unpress(event.key)
-    });
-  });
-
-  // useEffect occurs after the return. This useEffect tracks change in any of the useStates and calls the state() function
-  // to create and send the state to console(later change to send it where we need).
-  useEffect(() => {
-    const keyW = document.getElementById('W')
-    const keyA = document.getElementById('A')
-    const keyS = document.getElementById('S')
-    const keyD = document.getElementById('D')
-
-    if (isWPressed) {
-      keyW.style.backgroundColor = 'grey'
-    } else {
-      keyW.style.backgroundColor = '#e74c3c'
-    }
-    if (isAPressed) {
-      keyA.style.backgroundColor = 'grey'
-    } else {
-      keyA.style.backgroundColor = '#2ecc71'
-    }
-    if (isSPressed) {
-      keyS.style.backgroundColor = 'grey'
-    } else {
-      keyS.style.backgroundColor = '#e67e22'
-    }
-    if (isDPressed) {
-      keyD.style.backgroundColor = 'grey'
-    } else {
-      keyD.style.backgroundColor = '#9b59b6'
-    }
-  }, [isWPressed, isAPressed, isSPressed, isDPressed]);
-
-  // Simple dictionary
-  function state() {
-    const dict = {
-      "W": "0",
-      "A": "0",
-      "S": "0",
-      "D": "0"
-    }
-
-    console.log(isWPressed, isAPressed, isSPressed, isDPressed)
-
-    if (isWPressed) {
-      dict["W"] = "1";
-    }
-    if (isAPressed) {
-      dict["A"] = "1";
-    }
-    if (isSPressed) {
-      dict["S"] = "1";
-    }
-    if (isDPressed) {
-      dict["D"] = "1";
-    }
-    return dict;
-  }
-
-  // Send data
-  const sendData = (curr_state, ip) => {
-    console.log('sending', curr_state)
-    fetch(ip, {
-      'method' : 'POST',
-      headers: { "Content-Type" : "application/json" },
-      body: JSON.stringify({"curr_state" : curr_state})
-    }).then(resp => resp.json())
-    .catch(error => console.log(error));
-  }
-  
-  // Creates sending loop. Delay is null, so does not loop when isConnected is false. Delay is 3s when isConnected is true.
-  useInterval((put = state())  => {
-    const ip = CONNECTED_IP
-    sendData(put, ip)}, isConnected? 500 : null);
-  
   const reconnect = () => {
-    setIsConnected(true);
-  }
+    setConnected(true);
+  };
   const disconnect = () => {
-    setIsConnected(false);
-  }
-  
-  return <div id="listener">
-  <button>Keyboard mode</button>
-  <div>{isWPressed.toString()}, {isAPressed.toString()}, {isSPressed.toString()}, {isDPressed.toString()}</div>
-  <div>
-    <button onClick={reconnect}>Connect</button>
-    <button onClick={disconnect}>Disconnect</button>
-  </div>
-  <div className="keypad">
-    <Empty/>
-    <Keys name='W' id='W' onMouseDown={() => press('w')} onMouseUp={() => unpress('w')}/>
-    <Empty/>
-    <Keys name='A' id='A' onMouseDown={() => press('a')} onMouseUp={() => unpress('a')}/>
-    <Keys name='S' id='S' onMouseDown={() => press('s')} onMouseUp={() => unpress('s')}/>
-    <Keys name='D' id='D' onMouseDown={() => press('d')} onMouseUp={() => unpress('d')}/>
-  </div>
-</div>;
+    setConnected(false);
+  };
+
+  return (
+    <div>
+      <div>Press WASD or Arrow keys (UI buttons are buggy)</div>
+      <button onClick={reconnect}>Connect</button>
+      <button onClick={disconnect}>Disconnect</button>
+      <div className="keypad">
+        <div className="key empty" />
+        <Key dir={UP} />
+        <div className="key empty" />
+        <Key dir={LEFT} />
+        <Key dir={DOWN} />
+        <Key dir={RIGHT} />
+      </div>
+
+      <pre>{JSON.stringify(keyCount, null, 2)}</pre>
+    </div>
+  );
 }
+
+export default KeyHandler;
