@@ -1,24 +1,29 @@
+import { dataLayer } from "../actions/index.js";
 import React from "react";
-import CodeMirror from "@uiw/react-codemirror";
-import { python } from "@codemirror/lang-python";
-import { basicDark } from "@uiw/codemirror-theme-basic";
+import { render } from "react-dom";
+import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 function Editor() {
-  const [value, setValue] = React.useState("print(\"hello world!\")");
 
-  const onChange = React.useCallback((val, viewUpdate) => {
-    console.log("val:", val);
-    setValue(val);
-  }, []);
+  function onChange(newValue) {
+    console.log("change", newValue);
+  }
 
+  // Render editor
   return (
-    <CodeMirror
-      value={value}
-      height="200px"
-      theme={basicDark}
-      extensions={[python()]}
+    <div>    
+      <AceEditor
+      mode="python"
+      theme="github"
+      width="100%"
       onChange={onChange}
-    />
+      name="CodeEditor"
+      editorProps={{ $blockScrolling: true }}
+      />
+  </div>
   );
 }
 
